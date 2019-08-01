@@ -1,0 +1,365 @@
+---
+title: "An introduction to the obfuscatoR package"
+author:
+  - Erlend Dancke Sandorf^[University of Stirling, Stirling Management School, Economics Division, e.d.sandorf@stir.ac.uk]
+  - Caspar Chorus^[Delft University of Technology, Department of Engineering Systems and Services]
+  - Sander van Cranenburgh^[Delft University of Technology, Department of Engineering Systems and Services]
+package: obfuscatoR
+abstract: >
+  @Chorus2019 puts forward the idea that sometimes when people make choices  they wish to hide their true motivation from a potential onlooker. The obfuscatoR  package allows researchers to easily create and customize "obfuscation" games to test  the obfuscation hypothesis.
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+bibliography: ref.bib
+link-citations: yes
+vignette: >
+  %\VignetteIndexEntry{vignette-obfuscatoR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Introduction
+
+@Chorus2019 puts forward the idea that sometimes when people make choices they wish to hide their true motivation from a potential onlooker. The obfuscatoR package allows researchers to easily create and customize "obfuscation" games. These games are specifically designed to test the obfuscation hypothesis, i.e. when properly incentivized are people able to obfuscate.
+
+Let us consider a decision maker who has to decide on a course of action, but he is being observed by an onlooker[^1]. The decision maker seeks to choose an action that is in line with his underlying motivation or preferences[^2], but at the same time, he does not want the onlooker to know his true motivation for the course of action he chose. Instead, he seeks to take a course of action that is in line with his motivation, but leaves the onlooker as clueless as possible as to what that motivation might be - he obfuscates. For a full discussion of the technical details of the model and more detailed examples, we refer to @Chorus2019. 
+
+[^1]: As in @Chorus2019, we refer to the decision maker as he and the observer/onlooker as she. 
+[^2]: Note, that when we discuss the game, we refer to these motivations and preferences as rules.
+
+Let us assume that the set of rules (motivations above), $R$, and the set of possible actions, $A$, are known to both the decision maker and the observer. We define $r_k$ as the $k^{\mathrm{th}}$ element in $R$ and $a_j$ as the $j^{\mathrm{th}}$ element in $A$. Using the notions of information entropy [@Shannon1948] and Bayesian updating, we can formulate the observer's best guess as to what motivates the decision maker as the posterior probability in \autoref{eqn-posterior}. This is the probability of a rule conditional on having observed an action. 
+
+\begin{equation}\label{eqn-posterior}
+  \Pr(r_k|a_j) = \frac{\Pr(a_j|r_k)\Pr(r_k)}{\sum_{k=1}^{K}\left[\Pr(a_j|r_k)\Pr(r_k)\right]}
+\end{equation} 
+
+where the vector of prior probabilities $\Pr(r_k)$ are assume flat and equal to $1/\mathrm{K}$ with $\mathrm{K}$ being equal to the number of rules. In a situation where the observer can observe multiple actions by the same individual, then these prior probabilities are no longer equal. For example, if she observes two actions by the same decision maker, then the posterior after the first action becomes the prior when calculating the entropy of the second action. $\Pr(a_j|r_k)$ is calculated differently depending on whether an action is obligated under a given rule or simply permitted. These are sometimes referred to as strong and weak rules and are calculated as in \autoref{eqn-strong-rule} and \autoref{eqn-weak-rule} respectively. 
+
+\begin{equation}\label{eqn-strong-rule}
+  \Pr(a_j|r_k) = \left\{\begin{array}{cl}
+  1 & \text{if } a_j \text{is obliged under } r_k\\
+  0 & \text{otherwise} \\
+  \end{array}\right.
+\end{equation}
+
+\begin{equation}\label{eqn-weak-rule}
+  \Pr(a_j|r_k) = \left\{\begin{array}{cl}
+  1/\mathrm{L} & \text{if } a_j \text{is permitted under } r_k\\
+  0 & \text{otherwise} \\
+  \end{array}\right.
+\end{equation}
+
+where $\mathrm{L}$ is the size of the subset of permitted actions under $r_k$. As such, according to \autoref{eqn-posterior} the observer is updating her beliefs about which rule governs a decision maker's actions each time she observes an action. An obfuscating decision maker seeks to take an action, consistent with his rule, to leave the observer as clueless as possible as to which rule governs his actions. This is quantified in terms of Shannon's entropy. Specifically, the decision maker seeks to maximize \autoref{eqn-entropy}: 
+
+\begin{equation}\label{eqn-entropy}
+  \mathrm{H}_j = -\sum_{k=1}^{K}\left[\Pr(r_k|a_j)\log(\Pr(r_k|a_j))\right]
+\end{equation}
+
+The rest of this vignette sets out to describe how to use the package to generate simple and more complex versions of the obfuscation game. Once we have grasped the simple mechanics of the package, we will show you how to introduce additional restrictions that are useful to raise or lower the difficulty of the game for both decision makers and observers. 
+
+## Installing the package
+
+You can install the most recent version of the package from [GitHub](https://github.com/edsandorf/obfuscatoR). 
+
+```{r, eval = FALSE}
+devtools::install_github('edsandorf/obfuscatoR')
+```
+
+Once you have installed the package, go ahead and load it using the standard library function in R. 
+
+```{r setup}
+library(obfuscatoR)
+```
+
+## Citing the package
+To cite this package: 
+
+Sandorf, E. D., Chorus, C. & van Cranenburgh, S., 2019, obfuscatoR: An R Package for the Obfuscation Game, https://CRAN.R-project.org/package=obfuscatoR
+
+# Simple obfuscation designs {#simple-design}
+
+## Generating a design
+First, let us create a very simple design. At a minimum, we need to specify the number of possible rules and actions. We specify this in a list of design options `design_opt_input` as follows (click [here](#design-options) for a full list of options): 
+
+```{r}
+design_opt_input <- list(rules = 4,
+                         actions = 5)
+```
+
+Above, we specified that our design consists of 4 possible rules governing a decision maker's actions, and that there are 5 possible actions that he can take. To create a design, we pass the list of design options to the `generate_designs()` function.
+
+```{r}
+design <- generate_designs(design_opt_input)
+```
+
+Our design is a matrix with rows equal to the number of rules and columns equal to the number of possible actions. Throughout, the design will also be referred to as a rules-action matrix. We can print generated rules and action matrix using the `print_design()` function. 
+
+```{r}
+print_design(design)
+```
+
+The design is generated conditional on a given rule referred to as the considered rule. The considered rule is selected as part of the design generation process, and cannot be set by the analyst. It is possible to print additional information about the design generation process by setting `print_all = TRUE`. This will provide information on the number of iterations and whether all design conditions were met. 
+
+```{r}
+print_design(design, print_all = TRUE)
+```
+
+Note: It is possible to extract the vector of design conditions with `extract_attr(design, "design_conditions")`. 
+
+### Controlling replicability {#set-seed}
+The default behavior of the obfuscatoR package is to set a random seed each time you generate a design. This is to minimize the possibility of always generating the same designs. However, sometimes it may be required to generate the same design, e.g. to ensure replicability or for teaching purposes. It is possible to set the seed for the random number generator using the `seed` option. For example: `design_opt_input <- list(seed = 10)`. Here, we have set the initial seed to 10. If we are generating [multiple designs](#multiple-designs), then the seed will increment by 1 for each design. That is, if the initial seed is 10 and we generate two designs, then the first design will be generated with seed set to 10 and the second with seed set to 11.
+
+## Calculate the entropy of each action {#entropy}
+
+The obfuscatoR package also includes a set of functions to evaluate the designs and calculate the entropy of a design. To identify the action that would leave the observer as clueless as possible as to which rule governs the decision maker's choice, we need to calculate the entropy of each action. We can do this using the `calculate_entropy()` function. 
+
+```{r}
+entropy <- calculate_entropy(design)
+```
+
+An obfuscating decision maker will choose an action, conditional on his rule, that will leave the observer as clueless as possible, i.e. with the highest entropy. We can print the the results of the entropy calculation using the `print_entropy()` function. 
+
+```{r}
+print_entropy(entropy)
+```
+
+To calculate the entropy of the action we also need to calculate the probability of an action conditional on a rule and the probability of a rule conditional on an action. We can print the results of these calculations by setting `print_all = TRUE`.
+
+```{r}
+print_entropy(entropy, print_all = TRUE)
+```
+
+### When priors are not flat 
+
+It is possible to supply a vector of prior probabilities when calculating the entropy measure. If no vector of priors is supplied, we assume flat priors, i.e. $1/R$, where $R$ is the number of rules. 
+
+```{r}
+prior_probs <- c(0.2, 0.3, 0.15, 0.35)
+entropy <- calculate_entropy(design, priors = prior_probs)
+print_entropy(entropy, print_all = TRUE)
+```
+
+## Restricted designs
+
+To make what we consider valid designs, we have implemented a set of restrictions, some of which can be changed by the user. This list is ordered to match the output vector from: `extract_attr(design, "design_conditions")`.
+
+1. Each design is generated based on a considered rule. The considered rule cannot contain an obligated action. This is because it would force the decision maker to choose the obligated action and the observer would be able to guess the rule with a high degree of accuracy, i.e. the entropy of the action is very low.
+2. No action included in the design can be forbidden by every rule. Said another way, each action has to be permitted by at least one rule.
+3. Actions that are permitted under the considered rule has to fit a [minimum number of rules](#min-fit). The default is 0, i.e. without being set by the user, this restriction is not binding.
+4. A design cannot contain duplicate actions.
+5. The action that maximizes entropy has to be permitted by the considered rule.
+6. The action that maximizes entropy has to have the lowest posterior probability.
+7. To make the game easier for both decision makers and observers, the analyst can specify a [spread for the entropy](#spread-entropy) of actions. The larger the spread, the easier it should be to identify the entropy maximizing action.
+
+In addition to the 7 conditions above, there is an 8th condition not returned by `extract_attr(design, "design_conditions")`.
+
+8. There can only be one entropy maximizing action. That is, we cannot have a tie between two different actions.
+
+# Complex obfuscation designs {#complex-designs}
+
+The designs outlined above are fairly simple. We have placed no restrictions on the design with respect to the number of rules that are allowed nor have we included rules with obligatory actions. The obfuscatoR package includes several options that allow us to create designs that vary with respect to the maximum and minimum allowable actions per rule, the number of rules with obligatory actions and even ensure a given spread of the entropy among the actions available to decision makers. Let us take a closer look at the various options that are available to us. 
+
+## Obligatory actions {#obligatory-actions}
+
+We can specify the number of obligatory actions through the use of the option `obligatory`. Let us continue to work with the design from above, but this time we will specify that one of the rules has an obligatory action.
+
+```{r}
+design_opt_input <- list(rules = 4,
+                         actions = 5,
+                         obligatory = 1)
+
+design <- generate_designs(design_opt_input)
+
+print_design(design, FALSE)
+```
+
+The rule with an obligatory action is the row with only -1 and 1 in the matrix above. 
+
+## Minimum and maximum number of available actions for the considered rule {#min-max}
+
+As the size of our designs become larger, in order to keep the complexity of the choice at a reasonable level, we might want to specify a minimum and maximum number of allowed actions under the considered rule. We can easily do this through the options `min` and `max`. 
+
+```{r}
+design_opt_input <- list(rules = 4,
+                         actions = 5,
+                         min = 2, 
+                         max = 3,
+                         obligatory = 1)
+
+design <- generate_designs(design_opt_input)
+
+print_design(design, FALSE)
+```
+
+## Minimum number of rules fitting each permitted action conditional on the rule {#min-fit}
+
+To vary the difficulty of the game for the observer we can specify the minimum number of rules that each permitted action fits conditional on the observed rule. We specify the minimum number of rules using the `min_fit` option. For example, if we are considering a game with 4 rules and 5 actions and the considered rule permits the decision maker to choose one of two actions, then setting `min_fit = 2` means that each of the two actions fit at least two rules including the considered rule.
+
+```{r}
+design_opt_input <- list(rules = 4,
+                         actions = 5,
+                         min_fit = 2,
+                         obligatory = 1)
+
+design <- generate_designs(design_opt_input)
+
+print_design(design, FALSE)
+```
+
+## Spread of entropy {#spread-entropy}
+
+Given the trial and error nature of searching for obfuscation designs, by chance, we may end up in a situation where the difference between the entropy maximizing action and the second best is very small. This will make it very difficult for both decision makers and observers to identify the entropy maximizing action. The `generate_designs()` function includes an option that allow us to specify the "spread" of entropy. 
+
+```{r}
+design_opt_input <- list(rules = 4,
+                         actions = 5,
+                         considered_rule = 3,
+                         sd_entropy = 0.15)
+
+design <- generate_designs(design_opt_input)
+
+print_design(design, FALSE)
+```
+
+Compared to the designs above, we see that we have a much larger spread of entropy for each action.
+
+```{r}
+entropy <- calculate_entropy(design)
+
+print_entropy(entropy)
+```
+
+## Multiple designs {#multiple-designs}
+
+Above, we have focused on one shot games, i.e. we have generated a single design. Often, researchers may want to play repeated games. The obfuscatoR package makes it easy to create multiple designs. Let us create a series of 2 designs by setting `designs = 2`. We are only using 2 designs here to save space when printing the output.
+
+```{r}
+design_opt_input <- list(rules = 4,
+                         actions = 5,
+                         considered_rule = 3,
+                         designs = 2)
+
+design <- generate_designs(design_opt_input)
+
+print_design(design, TRUE)
+```
+
+To calculate the entropy associated with each action in the designs, we can run the calculate entropy function, but this time we supply a list of designs. 
+
+```{r}
+entropy <- calculate_entropy(design)
+
+print_entropy(entropy)
+```
+If you wish to print all the information about all designs, as above, you can set `print_all = TRUE` as shown below. We leave the user to run that code on their own machine given the rather large output. 
+
+```{r, eval = FALSE}
+print_entropy(entropy, print_all = TRUE)
+```
+
+## List of design options {#design-options}
+
+We provide the full list of design options and defaults in the table below. 
+
+| Option | Description | Default | Must be specified |
+|--------|-------------|---------| ------------------|
+| [rules](#simple-design)  | The number of rules | NULL | Yes |
+| [actions](#simple-design) | The number of actions | NULL | Yes |
+| [min](#min-max) | Minimum number of actions available for the considered rule | NA | No |
+| [max](#min-max) | Maximum number of actions available for the considered rule | NA | No |
+| [min_fit](#min-fit) | Minimum number of rules fitting each permitted action conditional on the rule | 0 | No |
+| [obligatory](#obligatory-actions) | Number of rules with obligatory actions | 0 | No |
+| [sd_entropy](#spread-entropy) | Specifies the standard deviation of the entropy values | NA | No |
+| [designs](#multiple-designs) | Number of designs to generate | 1 | No |
+| max_iter | Maximum number of iterations before stopping the search for designs | 1e5 | No |
+| [seed](#set-seed) | A seed for the random number generator | NA | No |
+
+## A cautionary note
+
+The search for new designs is one of trial and error. If you set too many or too tight restrictions on your designs, you may not be able to find valid designs in a reasonable time and the search algorithm will continue until it is stopped. 
+
+It is good practice to manually inspect all designs prior to use to ensure that they are indeed of the form you want. 
+
+# Saving the designs {#saving}
+
+Once you have created your designs, you might want to save them. We can do this using the `save_design()` function. The function stores the designs in a .csv file or multiple .csv files if you have generated multiple designs. The function will automatically generate a name of the form "FILE-NAME-rule-X-design-I.csv", where **X** is the considered rule used to generate the design, and **I** is the design number.
+
+```{r, eval = FALSE}
+save_design(design, "my_designs")
+```
+
+# Calculating the payouts {#payout}
+
+The obfuscatoR package also contains a set of functions that can aid the analyst in determining the expected payout to observers and decision makers from any given design. The participants are incentivized such that it is always in the best interest of the decision maker to choose the entropy maximizing action, and if succeeding in doing so, the observer should avoid guessing the rule. 
+
+## Payout to the observer
+The expected payout to the observer consists of two parts: i) The expected payout from guessing, and ii) the expected payout from not guessing. The first expectation depends on the posterior probabilities calculated in \autoref{eqn-posterior}, and is calculated using \autoref{eqn-payout-obs}:
+
+\begin{equation}\label{eqn-payout-obs}
+  \mathrm{E}\left[P\right] = \mathrm{argmax}\left\{\Pr(r_k|a_j)\right\}\pi
+\end{equation}
+
+where $\mathrm{argmax}\left\{\Pr(r_k|a_j)\right\}$ is the maximum posterior probability that a specific rule underlies a decision maker's action, and $\pi^\mathrm{G}$ is the payout from guessing correctly. If the observer guesses incorrectly, she receives nothing. If the observer refrains from guessing, she will receive $\pi^\mathrm{NG}$ with certainty.
+
+## Payout to the decision maker
+The expected payout to the decision maker depends on whether or not the observer chooses to guess. If the decision maker is successful in keeping the observer as clueless as possible as to which rule governs his actions, i.e. the observer refrains from guessing, then the decision maker receives $\phi$. If the observer decides to guess, the decision maker receives nothing.
+
+The probability that an observer tries to guess is a function of the difference between the expected payout from guessing, i.e. \autoref{eqn-payout-obs}, and the payout if she refrains from guessing as in \autoref{eqn-probabilistic}. 
+
+\begin{equation}\label{eqn-probabilistic}
+  \Pr(\mathrm{G}) = \frac{1}{1 + \exp(-(\mathrm{E}\left[P\right] - \pi^\mathrm{NG}))}
+\end{equation}
+
+Alternatively, we can treat the decision to guess as deterministic and use an indicator function:
+
+\begin{equation}\label{eqn-deterministic}
+  \Pr(\mathrm{G}) = \left\{\begin{array}{cl}
+  1 & \mathrm{if } \mathrm{E}\left[P\right] > \pi^\mathrm{NG} \\
+  0 & \mathrm{if } \mathrm{E}\left[P\right] \leq \pi^\mathrm{NG}\\
+  \end{array}
+  \right.
+\end{equation}
+
+Using either \autoref{eqn-probabilistic} or \autoref{eqn-deterministic}, we can calculate the expected payout to the decision maker using \autoref{eqn-payout-dm}:
+
+\begin{equation}\label{eqn-payout-dm}
+  \mathrm{E}\left[P\right] = (1 - \Pr(\mathrm{G})) * \phi
+\end{equation}
+
+## An example
+
+Let us create a simple design with 4 rules and 5 possible actions, and calculate the entropy of each action. Now, we can use the `calculate_payouts` function to calculate the expected payout to both the observer and decision maker. Please note that the only consequential payouts to the decision maker are for those actions permitted by the considered rule. Below, we have set the option `deterministic = FALSE`, this means that the probabilities of the observer guessing are calculated using \autoref{eqn-probabilistic}. If `deterministic = TRUE`, then the probabilities are calculated using \autoref{eqn-deterministic}. 
+
+```{r}
+design_opt_input <- list(rules = 4,
+                         actions = 5)
+
+design <- generate_designs(design_opt_input)
+entropy <- calculate_entropy(design)
+
+payout <- calculate_payouts(entropy,
+                            pay_obs = 10,
+                            pay_no_guess = 5,
+                            pay_dm = 5,
+                            deterministic = FALSE)
+```
+
+The expected payout to the observer from guessing is calculated for every action based on the highest conditional probability for that action, i.e. what is the expected payout from guessing if she observes any given action. For the decision maker it is the expected payout from choosing any given action. Notice that the expected payout from choosing an action that is prohibited by the considered rule is zero. We can print the calculated probabilities of guessing by setting `print_all = TRUE`. 
+
+
+```{r}
+print_payout(payout, print_all = TRUE)
+```
+
+
+# Acknowledgments
+This research has received funding from the European Research Council by means of ERC-Consolidator grant 724431-BEHAVE. Erlend Dancke Sandorf acknowledges funding from the European Union's Horizon 2020 research and innovation program under the Marie Sklodowska-Curie grant agreement 793163-INSPiRE. We are grateful to Teodora Szep for testing and commenting on earlier versions of the package. Any remaining errors are the sole responsibility of the authors. 
+
+# References

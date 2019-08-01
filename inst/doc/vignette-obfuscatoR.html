@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Erlend Dancke Sandorf" />
+<meta name="author" content="Caspar Chorus" />
+<meta name="author" content="Sander van Cranenburgh" />
+
+
+<title>An introduction to the obfuscatoR package</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(data-line-number);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+<style type="text/css">
+  p.abstract{
+    text-align: center;
+    font-weight: bold;
+  }
+  div.abstract{
+    margin: auto;
+    width: 90%;
+  }
+</style>
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#header {
+text-align: center;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">An introduction to the obfuscatoR package</h1>
+<h4 class="author">Erlend Dancke Sandorf<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></h4>
+<h4 class="author">Caspar Chorus<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a></h4>
+<h4 class="author">Sander van Cranenburgh<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a></h4>
+<div class="abstract">
+<p class="abstract">Abstract</p>
+<span class="citation">Chorus et al. (<a href="#ref-Chorus2019">2019</a>)</span> puts forward the idea that sometimes when people make choices they wish to hide their true motivation from a potential onlooker. The obfuscatoR package allows researchers to easily create and customize “obfuscation” games to test the obfuscation hypothesis.
+</div>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#introduction">Introduction</a><ul>
+<li><a href="#installing-the-package">Installing the package</a></li>
+<li><a href="#citing-the-package">Citing the package</a></li>
+</ul></li>
+<li><a href="#simple-design">Simple obfuscation designs</a><ul>
+<li><a href="#generating-a-design">Generating a design</a><ul>
+<li><a href="#set-seed">Controlling replicability</a></li>
+</ul></li>
+<li><a href="#entropy">Calculate the entropy of each action</a><ul>
+<li><a href="#when-priors-are-not-flat">When priors are not flat</a></li>
+</ul></li>
+<li><a href="#restricted-designs">Restricted designs</a></li>
+</ul></li>
+<li><a href="#complex-designs">Complex obfuscation designs</a><ul>
+<li><a href="#obligatory-actions">Obligatory actions</a></li>
+<li><a href="#min-max">Minimum and maximum number of available actions for the considered rule</a></li>
+<li><a href="#min-fit">Minimum number of rules fitting each permitted action conditional on the rule</a></li>
+<li><a href="#spread-entropy">Spread of entropy</a></li>
+<li><a href="#multiple-designs">Multiple designs</a></li>
+<li><a href="#design-options">List of design options</a></li>
+<li><a href="#a-cautionary-note">A cautionary note</a></li>
+</ul></li>
+<li><a href="#saving">Saving the designs</a></li>
+<li><a href="#payout">Calculating the payouts</a><ul>
+<li><a href="#payout-to-the-observer">Payout to the observer</a></li>
+<li><a href="#payout-to-the-decision-maker">Payout to the decision maker</a></li>
+<li><a href="#an-example">An example</a></li>
+</ul></li>
+<li><a href="#acknowledgments">Acknowledgments</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+</div>
+
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p><span class="citation">Chorus et al. (<a href="#ref-Chorus2019">2019</a>)</span> puts forward the idea that sometimes when people make choices they wish to hide their true motivation from a potential onlooker. The obfuscatoR package allows researchers to easily create and customize “obfuscation” games. These games are specifically designed to test the obfuscation hypothesis, i.e. when properly incentivized are people able to obfuscate.</p>
+<p>Let us consider a decision maker who has to decide on a course of action, but he is being observed by an onlooker<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a>. The decision maker seeks to choose an action that is in line with his underlying motivation or preferences<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a>, but at the same time, he does not want the onlooker to know his true motivation for the course of action he chose. Instead, he seeks to take a course of action that is in line with his motivation, but leaves the onlooker as clueless as possible as to what that motivation might be - he obfuscates. For a full discussion of the technical details of the model and more detailed examples, we refer to <span class="citation">Chorus et al. (<a href="#ref-Chorus2019">2019</a>)</span>.</p>
+<p>Let us assume that the set of rules (motivations above), <span class="math inline">\(R\)</span>, and the set of possible actions, <span class="math inline">\(A\)</span>, are known to both the decision maker and the observer. We define <span class="math inline">\(r_k\)</span> as the <span class="math inline">\(k^{\mathrm{th}}\)</span> element in <span class="math inline">\(R\)</span> and <span class="math inline">\(a_j\)</span> as the <span class="math inline">\(j^{\mathrm{th}}\)</span> element in <span class="math inline">\(A\)</span>. Using the notions of information entropy <span class="citation">(Shannon <a href="#ref-Shannon1948">1948</a>)</span> and Bayesian updating, we can formulate the observer’s best guess as to what motivates the decision maker as the posterior probability in . This is the probability of a rule conditional on having observed an action.</p>
+<p><span class="math display">\[\begin{equation}\label{eqn-posterior}
+  \Pr(r_k|a_j) = \frac{\Pr(a_j|r_k)\Pr(r_k)}{\sum_{k=1}^{K}\left[\Pr(a_j|r_k)\Pr(r_k)\right]}
+\end{equation}\]</span></p>
+<p>where the vector of prior probabilities <span class="math inline">\(\Pr(r_k)\)</span> are assume flat and equal to <span class="math inline">\(1/\mathrm{K}\)</span> with <span class="math inline">\(\mathrm{K}\)</span> being equal to the number of rules. In a situation where the observer can observe multiple actions by the same individual, then these prior probabilities are no longer equal. For example, if she observes two actions by the same decision maker, then the posterior after the first action becomes the prior when calculating the entropy of the second action. <span class="math inline">\(\Pr(a_j|r_k)\)</span> is calculated differently depending on whether an action is obligated under a given rule or simply permitted. These are sometimes referred to as strong and weak rules and are calculated as in  and  respectively.</p>
+<p><span class="math display">\[\begin{equation}\label{eqn-strong-rule}
+  \Pr(a_j|r_k) = \left\{\begin{array}{cl}
+  1 &amp; \text{if } a_j \text{is obliged under } r_k\\
+  0 &amp; \text{otherwise} \\
+  \end{array}\right.
+\end{equation}\]</span></p>
+<p><span class="math display">\[\begin{equation}\label{eqn-weak-rule}
+  \Pr(a_j|r_k) = \left\{\begin{array}{cl}
+  1/\mathrm{L} &amp; \text{if } a_j \text{is permitted under } r_k\\
+  0 &amp; \text{otherwise} \\
+  \end{array}\right.
+\end{equation}\]</span></p>
+<p>where <span class="math inline">\(\mathrm{L}\)</span> is the size of the subset of permitted actions under <span class="math inline">\(r_k\)</span>. As such, according to  the observer is updating her beliefs about which rule governs a decision maker’s actions each time she observes an action. An obfuscating decision maker seeks to take an action, consistent with his rule, to leave the observer as clueless as possible as to which rule governs his actions. This is quantified in terms of Shannon’s entropy. Specifically, the decision maker seeks to maximize :</p>
+<p><span class="math display">\[\begin{equation}\label{eqn-entropy}
+  \mathrm{H}_j = -\sum_{k=1}^{K}\left[\Pr(r_k|a_j)\log(\Pr(r_k|a_j))\right]
+\end{equation}\]</span></p>
+<p>The rest of this vignette sets out to describe how to use the package to generate simple and more complex versions of the obfuscation game. Once we have grasped the simple mechanics of the package, we will show you how to introduce additional restrictions that are useful to raise or lower the difficulty of the game for both decision makers and observers.</p>
+<div id="installing-the-package" class="section level2">
+<h2>Installing the package</h2>
+<p>You can install the most recent version of the package from <a href="https://github.com/edsandorf/obfuscatoR">GitHub</a>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1">devtools<span class="op">::</span><span class="kw">install_github</span>(<span class="st">'edsandorf/obfuscatoR'</span>)</a></code></pre></div>
+<p>Once you have installed the package, go ahead and load it using the standard library function in R.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="kw">library</span>(obfuscatoR)</a>
+<a class="sourceLine" id="cb2-2" data-line-number="2"><span class="co">#&gt; Welcome to obfuscatoR: An R Package for the Obfuscation Game </span></a>
+<a class="sourceLine" id="cb2-3" data-line-number="3"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb2-4" data-line-number="4"><span class="co">#&gt; You are currently using version: 0.2.0</span></a>
+<a class="sourceLine" id="cb2-5" data-line-number="5"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb2-6" data-line-number="6"><span class="co">#&gt; The latest version is: 0.2.0</span></a>
+<a class="sourceLine" id="cb2-7" data-line-number="7"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb2-8" data-line-number="8"><span class="co">#&gt; To access the latest version, please run </span></a>
+<a class="sourceLine" id="cb2-9" data-line-number="9"><span class="co">#&gt; devtools::install_github('edsandorf/obfuscatoR') </span></a>
+<a class="sourceLine" id="cb2-10" data-line-number="10"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb2-11" data-line-number="11"><span class="co">#&gt; To cite this package: Sandorf, E. D., Chorus, C. &amp; van Cranenburgh, S., 2019, obfuscatoR: An R Package for the Obfuscation Game, https://CRAN.R-project.org/package=obfuscatoR</span></a></code></pre></div>
+</div>
+<div id="citing-the-package" class="section level2">
+<h2>Citing the package</h2>
+<p>To cite this package:</p>
+<p>Sandorf, E. D., Chorus, C. &amp; van Cranenburgh, S., 2019, obfuscatoR: An R Package for the Obfuscation Game, <a href="https://CRAN.R-project.org/package=obfuscatoR" class="uri">https://CRAN.R-project.org/package=obfuscatoR</a></p>
+</div>
+</div>
+<div id="simple-design" class="section level1">
+<h1>Simple obfuscation designs</h1>
+<div id="generating-a-design" class="section level2">
+<h2>Generating a design</h2>
+<p>First, let us create a very simple design. At a minimum, we need to specify the number of possible rules and actions. We specify this in a list of design options <code>design_opt_input</code> as follows (click <a href="#design-options">here</a> for a full list of options):</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1">design_opt_input &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">rules =</span> <span class="dv">4</span>,</a>
+<a class="sourceLine" id="cb3-2" data-line-number="2">                         <span class="dt">actions =</span> <span class="dv">5</span>)</a></code></pre></div>
+<p>Above, we specified that our design consists of 4 possible rules governing a decision maker’s actions, and that there are 5 possible actions that he can take. To create a design, we pass the list of design options to the <code>generate_designs()</code> function.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1">design &lt;-<span class="st"> </span><span class="kw">generate_designs</span>(design_opt_input)</a></code></pre></div>
+<p>Our design is a matrix with rows equal to the number of rules and columns equal to the number of possible actions. Throughout, the design will also be referred to as a rules-action matrix. We can print generated rules and action matrix using the <code>print_design()</code> function.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="kw">print_design</span>(design)</a>
+<a class="sourceLine" id="cb5-2" data-line-number="2"><span class="co">#&gt; The rules-action matrix </span></a>
+<a class="sourceLine" id="cb5-3" data-line-number="3"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb5-4" data-line-number="4"><span class="co">#&gt; Rows: Rules </span></a>
+<a class="sourceLine" id="cb5-5" data-line-number="5"><span class="co">#&gt; Columns: Actions </span></a>
+<a class="sourceLine" id="cb5-6" data-line-number="6"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb5-7" data-line-number="7"><span class="co">#&gt;    A1 A2 A3 A4 A5</span></a>
+<a class="sourceLine" id="cb5-8" data-line-number="8"><span class="co">#&gt; R1 -1 -1  0  0 -1</span></a>
+<a class="sourceLine" id="cb5-9" data-line-number="9"><span class="co">#&gt; R2  0 -1  0  0 -1</span></a>
+<a class="sourceLine" id="cb5-10" data-line-number="10"><span class="co">#&gt; R3 -1  0  0 -1 -1</span></a>
+<a class="sourceLine" id="cb5-11" data-line-number="11"><span class="co">#&gt; R4 -1  0  0 -1  0</span></a>
+<a class="sourceLine" id="cb5-12" data-line-number="12"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb5-13" data-line-number="13"><span class="co">#&gt; The considered rule is 2.</span></a></code></pre></div>
+<p>The design is generated conditional on a given rule referred to as the considered rule. The considered rule is selected as part of the design generation process, and cannot be set by the analyst. It is possible to print additional information about the design generation process by setting <code>print_all = TRUE</code>. This will provide information on the number of iterations and whether all design conditions were met.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="kw">print_design</span>(design, <span class="dt">print_all =</span> <span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb6-2" data-line-number="2"><span class="co">#&gt; The rules-action matrix </span></a>
+<a class="sourceLine" id="cb6-3" data-line-number="3"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb6-4" data-line-number="4"><span class="co">#&gt; Rows: Rules </span></a>
+<a class="sourceLine" id="cb6-5" data-line-number="5"><span class="co">#&gt; Columns: Actions </span></a>
+<a class="sourceLine" id="cb6-6" data-line-number="6"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb6-7" data-line-number="7"><span class="co">#&gt;    A1 A2 A3 A4 A5</span></a>
+<a class="sourceLine" id="cb6-8" data-line-number="8"><span class="co">#&gt; R1 -1 -1  0  0 -1</span></a>
+<a class="sourceLine" id="cb6-9" data-line-number="9"><span class="co">#&gt; R2  0 -1  0  0 -1</span></a>
+<a class="sourceLine" id="cb6-10" data-line-number="10"><span class="co">#&gt; R3 -1  0  0 -1 -1</span></a>
+<a class="sourceLine" id="cb6-11" data-line-number="11"><span class="co">#&gt; R4 -1  0  0 -1  0</span></a>
+<a class="sourceLine" id="cb6-12" data-line-number="12"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb6-13" data-line-number="13"><span class="co">#&gt; The considered rule is 2.</span></a>
+<a class="sourceLine" id="cb6-14" data-line-number="14"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb6-15" data-line-number="15"><span class="co">#&gt; The design was found in 6 iterations. </span></a>
+<a class="sourceLine" id="cb6-16" data-line-number="16"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb6-17" data-line-number="17"><span class="co">#&gt; All the design conditions were met: TRUE</span></a></code></pre></div>
+<p>Note: It is possible to extract the vector of design conditions with <code>extract_attr(design, &quot;design_conditions&quot;)</code>.</p>
+<div id="set-seed" class="section level3">
+<h3>Controlling replicability</h3>
+<p>The default behavior of the obfuscatoR package is to set a random seed each time you generate a design. This is to minimize the possibility of always generating the same designs. However, sometimes it may be required to generate the same design, e.g. to ensure replicability or for teaching purposes. It is possible to set the seed for the random number generator using the <code>seed</code> option. For example: <code>design_opt_input &lt;- list(seed = 10)</code>. Here, we have set the initial seed to 10. If we are generating <a href="#multiple-designs">multiple designs</a>, then the seed will increment by 1 for each design. That is, if the initial seed is 10 and we generate two designs, then the first design will be generated with seed set to 10 and the second with seed set to 11.</p>
+</div>
+</div>
+<div id="entropy" class="section level2">
+<h2>Calculate the entropy of each action</h2>
+<p>The obfuscatoR package also includes a set of functions to evaluate the designs and calculate the entropy of a design. To identify the action that would leave the observer as clueless as possible as to which rule governs the decision maker’s choice, we need to calculate the entropy of each action. We can do this using the <code>calculate_entropy()</code> function.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1">entropy &lt;-<span class="st"> </span><span class="kw">calculate_entropy</span>(design)</a></code></pre></div>
+<p>An obfuscating decision maker will choose an action, conditional on his rule, that will leave the observer as clueless as possible, i.e. with the highest entropy. We can print the the results of the entropy calculation using the <code>print_entropy()</code> function.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="kw">print_entropy</span>(entropy)</a>
+<a class="sourceLine" id="cb8-2" data-line-number="2"><span class="co">#&gt; Shannon's entropy -- Design  1 </span></a>
+<a class="sourceLine" id="cb8-3" data-line-number="3"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb8-4" data-line-number="4"><span class="co">#&gt;    A1    A2    A3    A4    A5 </span></a>
+<a class="sourceLine" id="cb8-5" data-line-number="5"><span class="co">#&gt; 0.000 0.292 0.593 0.292 0.000</span></a></code></pre></div>
+<p>To calculate the entropy of the action we also need to calculate the probability of an action conditional on a rule and the probability of a rule conditional on an action. We can print the results of these calculations by setting <code>print_all = TRUE</code>.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1"><span class="kw">print_entropy</span>(entropy, <span class="dt">print_all =</span> <span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb9-2" data-line-number="2"><span class="co">#&gt; Shannon's entropy -- Design  1 </span></a>
+<a class="sourceLine" id="cb9-3" data-line-number="3"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb9-4" data-line-number="4"><span class="co">#&gt;    A1    A2    A3    A4    A5 </span></a>
+<a class="sourceLine" id="cb9-5" data-line-number="5"><span class="co">#&gt; 0.000 0.292 0.593 0.292 0.000 </span></a>
+<a class="sourceLine" id="cb9-6" data-line-number="6"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb9-7" data-line-number="7"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb9-8" data-line-number="8"><span class="co">#&gt; The rules-action matrix </span></a>
+<a class="sourceLine" id="cb9-9" data-line-number="9"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb9-10" data-line-number="10"><span class="co">#&gt; Rows: Rules </span></a>
+<a class="sourceLine" id="cb9-11" data-line-number="11"><span class="co">#&gt; Columns: Actions </span></a>
+<a class="sourceLine" id="cb9-12" data-line-number="12"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb9-13" data-line-number="13"><span class="co">#&gt;    A1 A2 A3 A4 A5</span></a>
+<a class="sourceLine" id="cb9-14" data-line-number="14"><span class="co">#&gt; R1 -1 -1  0  0 -1</span></a>
+<a class="sourceLine" id="cb9-15" data-line-number="15"><span class="co">#&gt; R2  0 -1  0  0 -1</span></a>
+<a class="sourceLine" id="cb9-16" data-line-number="16"><span class="co">#&gt; R3 -1  0  0 -1 -1</span></a>
+<a class="sourceLine" id="cb9-17" data-line-number="17"><span class="co">#&gt; R4 -1  0  0 -1  0</span></a>
+<a class="sourceLine" id="cb9-18" data-line-number="18"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb9-19" data-line-number="19"><span class="co">#&gt; The considered rule is 2.</span></a>
+<a class="sourceLine" id="cb9-20" data-line-number="20"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb9-21" data-line-number="21"><span class="co">#&gt; The vector of prior probabilities </span></a>
+<a class="sourceLine" id="cb9-22" data-line-number="22"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb9-23" data-line-number="23"><span class="co">#&gt;   R1   R2   R3   R4 </span></a>
+<a class="sourceLine" id="cb9-24" data-line-number="24"><span class="co">#&gt; 0.25 0.25 0.25 0.25 </span></a>
+<a class="sourceLine" id="cb9-25" data-line-number="25"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb9-26" data-line-number="26"><span class="co">#&gt; The probability of an action conditional on a rule </span></a>
+<a class="sourceLine" id="cb9-27" data-line-number="27"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb9-28" data-line-number="28"><span class="co">#&gt;       A1    A2    A3    A4    A5</span></a>
+<a class="sourceLine" id="cb9-29" data-line-number="29"><span class="co">#&gt; R1 0.000 0.000 0.500 0.500 0.000</span></a>
+<a class="sourceLine" id="cb9-30" data-line-number="30"><span class="co">#&gt; R2 0.333 0.000 0.333 0.333 0.000</span></a>
+<a class="sourceLine" id="cb9-31" data-line-number="31"><span class="co">#&gt; R3 0.000 0.500 0.500 0.000 0.000</span></a>
+<a class="sourceLine" id="cb9-32" data-line-number="32"><span class="co">#&gt; R4 0.000 0.333 0.333 0.000 0.333</span></a>
+<a class="sourceLine" id="cb9-33" data-line-number="33"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb9-34" data-line-number="34"><span class="co">#&gt; The probability of a rule conditional on observing an action, i.e. the posterior </span></a>
+<a class="sourceLine" id="cb9-35" data-line-number="35"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb9-36" data-line-number="36"><span class="co">#&gt;    A1  A2  A3  A4 A5</span></a>
+<a class="sourceLine" id="cb9-37" data-line-number="37"><span class="co">#&gt; R1  0 0.0 0.3 0.6  0</span></a>
+<a class="sourceLine" id="cb9-38" data-line-number="38"><span class="co">#&gt; R2  1 0.0 0.2 0.4  0</span></a>
+<a class="sourceLine" id="cb9-39" data-line-number="39"><span class="co">#&gt; R3  0 0.6 0.3 0.0  0</span></a>
+<a class="sourceLine" id="cb9-40" data-line-number="40"><span class="co">#&gt; R4  0 0.4 0.2 0.0  1</span></a></code></pre></div>
+<div id="when-priors-are-not-flat" class="section level3">
+<h3>When priors are not flat</h3>
+<p>It is possible to supply a vector of prior probabilities when calculating the entropy measure. If no vector of priors is supplied, we assume flat priors, i.e. <span class="math inline">\(1/R\)</span>, where <span class="math inline">\(R\)</span> is the number of rules.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1">prior_probs &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">0.2</span>, <span class="fl">0.3</span>, <span class="fl">0.15</span>, <span class="fl">0.35</span>)</a>
+<a class="sourceLine" id="cb10-2" data-line-number="2">entropy &lt;-<span class="st"> </span><span class="kw">calculate_entropy</span>(design, <span class="dt">priors =</span> prior_probs)</a>
+<a class="sourceLine" id="cb10-3" data-line-number="3"><span class="kw">print_entropy</span>(entropy, <span class="dt">print_all =</span> <span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb10-4" data-line-number="4"><span class="co">#&gt; Shannon's entropy -- Design  1 </span></a>
+<a class="sourceLine" id="cb10-5" data-line-number="5"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb10-6" data-line-number="6"><span class="co">#&gt;    A1    A2    A3    A4    A5 </span></a>
+<a class="sourceLine" id="cb10-7" data-line-number="7"><span class="co">#&gt; 0.000 0.291 0.597 0.301 0.000 </span></a>
+<a class="sourceLine" id="cb10-8" data-line-number="8"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb10-9" data-line-number="9"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb10-10" data-line-number="10"><span class="co">#&gt; The rules-action matrix </span></a>
+<a class="sourceLine" id="cb10-11" data-line-number="11"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb10-12" data-line-number="12"><span class="co">#&gt; Rows: Rules </span></a>
+<a class="sourceLine" id="cb10-13" data-line-number="13"><span class="co">#&gt; Columns: Actions </span></a>
+<a class="sourceLine" id="cb10-14" data-line-number="14"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb10-15" data-line-number="15"><span class="co">#&gt;    A1 A2 A3 A4 A5</span></a>
+<a class="sourceLine" id="cb10-16" data-line-number="16"><span class="co">#&gt; R1 -1 -1  0  0 -1</span></a>
+<a class="sourceLine" id="cb10-17" data-line-number="17"><span class="co">#&gt; R2  0 -1  0  0 -1</span></a>
+<a class="sourceLine" id="cb10-18" data-line-number="18"><span class="co">#&gt; R3 -1  0  0 -1 -1</span></a>
+<a class="sourceLine" id="cb10-19" data-line-number="19"><span class="co">#&gt; R4 -1  0  0 -1  0</span></a>
+<a class="sourceLine" id="cb10-20" data-line-number="20"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb10-21" data-line-number="21"><span class="co">#&gt; The considered rule is 2.</span></a>
+<a class="sourceLine" id="cb10-22" data-line-number="22"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb10-23" data-line-number="23"><span class="co">#&gt; The vector of prior probabilities </span></a>
+<a class="sourceLine" id="cb10-24" data-line-number="24"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb10-25" data-line-number="25"><span class="co">#&gt;   R1   R2   R3   R4 </span></a>
+<a class="sourceLine" id="cb10-26" data-line-number="26"><span class="co">#&gt; 0.20 0.30 0.15 0.35 </span></a>
+<a class="sourceLine" id="cb10-27" data-line-number="27"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb10-28" data-line-number="28"><span class="co">#&gt; The probability of an action conditional on a rule </span></a>
+<a class="sourceLine" id="cb10-29" data-line-number="29"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb10-30" data-line-number="30"><span class="co">#&gt;       A1    A2    A3    A4    A5</span></a>
+<a class="sourceLine" id="cb10-31" data-line-number="31"><span class="co">#&gt; R1 0.000 0.000 0.500 0.500 0.000</span></a>
+<a class="sourceLine" id="cb10-32" data-line-number="32"><span class="co">#&gt; R2 0.333 0.000 0.333 0.333 0.000</span></a>
+<a class="sourceLine" id="cb10-33" data-line-number="33"><span class="co">#&gt; R3 0.000 0.500 0.500 0.000 0.000</span></a>
+<a class="sourceLine" id="cb10-34" data-line-number="34"><span class="co">#&gt; R4 0.000 0.333 0.333 0.000 0.333</span></a>
+<a class="sourceLine" id="cb10-35" data-line-number="35"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb10-36" data-line-number="36"><span class="co">#&gt; The probability of a rule conditional on observing an action, i.e. the posterior </span></a>
+<a class="sourceLine" id="cb10-37" data-line-number="37"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb10-38" data-line-number="38"><span class="co">#&gt;    A1    A2    A3  A4 A5</span></a>
+<a class="sourceLine" id="cb10-39" data-line-number="39"><span class="co">#&gt; R1  0 0.000 0.255 0.5  0</span></a>
+<a class="sourceLine" id="cb10-40" data-line-number="40"><span class="co">#&gt; R2  1 0.000 0.255 0.5  0</span></a>
+<a class="sourceLine" id="cb10-41" data-line-number="41"><span class="co">#&gt; R3  0 0.391 0.191 0.0  0</span></a>
+<a class="sourceLine" id="cb10-42" data-line-number="42"><span class="co">#&gt; R4  0 0.609 0.298 0.0  1</span></a></code></pre></div>
+</div>
+</div>
+<div id="restricted-designs" class="section level2">
+<h2>Restricted designs</h2>
+<p>To make what we consider valid designs, we have implemented a set of restrictions, some of which can be changed by the user. This list is ordered to match the output vector from: <code>extract_attr(design, &quot;design_conditions&quot;)</code>.</p>
+<ol style="list-style-type: decimal">
+<li>Each design is generated based on a considered rule. The considered rule cannot contain an obligated action. This is because it would force the decision maker to choose the obligated action and the observer would be able to guess the rule with a high degree of accuracy, i.e. the entropy of the action is very low.</li>
+<li>No action included in the design can be forbidden by every rule. Said another way, each action has to be permitted by at least one rule.</li>
+<li>Actions that are permitted under the considered rule has to fit a <a href="#min-fit">minimum number of rules</a>. The default is 0, i.e. without being set by the user, this restriction is not binding.</li>
+<li>A design cannot contain duplicate actions.</li>
+<li>The action that maximizes entropy has to be permitted by the considered rule.</li>
+<li>The action that maximizes entropy has to have the lowest posterior probability.</li>
+<li>To make the game easier for both decision makers and observers, the analyst can specify a <a href="#spread-entropy">spread for the entropy</a> of actions. The larger the spread, the easier it should be to identify the entropy maximizing action.</li>
+</ol>
+<p>In addition to the 7 conditions above, there is an 8th condition not returned by <code>extract_attr(design, &quot;design_conditions&quot;)</code>.</p>
+<ol start="8" style="list-style-type: decimal">
+<li>There can only be one entropy maximizing action. That is, we cannot have a tie between two different actions.</li>
+</ol>
+</div>
+</div>
+<div id="complex-designs" class="section level1">
+<h1>Complex obfuscation designs</h1>
+<p>The designs outlined above are fairly simple. We have placed no restrictions on the design with respect to the number of rules that are allowed nor have we included rules with obligatory actions. The obfuscatoR package includes several options that allow us to create designs that vary with respect to the maximum and minimum allowable actions per rule, the number of rules with obligatory actions and even ensure a given spread of the entropy among the actions available to decision makers. Let us take a closer look at the various options that are available to us.</p>
+<div id="obligatory-actions" class="section level2">
+<h2>Obligatory actions</h2>
+<p>We can specify the number of obligatory actions through the use of the option <code>obligatory</code>. Let us continue to work with the design from above, but this time we will specify that one of the rules has an obligatory action.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" data-line-number="1">design_opt_input &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">rules =</span> <span class="dv">4</span>,</a>
+<a class="sourceLine" id="cb11-2" data-line-number="2">                         <span class="dt">actions =</span> <span class="dv">5</span>,</a>
+<a class="sourceLine" id="cb11-3" data-line-number="3">                         <span class="dt">obligatory =</span> <span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb11-4" data-line-number="4"></a>
+<a class="sourceLine" id="cb11-5" data-line-number="5">design &lt;-<span class="st"> </span><span class="kw">generate_designs</span>(design_opt_input)</a>
+<a class="sourceLine" id="cb11-6" data-line-number="6"></a>
+<a class="sourceLine" id="cb11-7" data-line-number="7"><span class="kw">print_design</span>(design, <span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb11-8" data-line-number="8"><span class="co">#&gt; The rules-action matrix </span></a>
+<a class="sourceLine" id="cb11-9" data-line-number="9"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb11-10" data-line-number="10"><span class="co">#&gt; Rows: Rules </span></a>
+<a class="sourceLine" id="cb11-11" data-line-number="11"><span class="co">#&gt; Columns: Actions </span></a>
+<a class="sourceLine" id="cb11-12" data-line-number="12"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb11-13" data-line-number="13"><span class="co">#&gt;    A1 A2 A3 A4 A5</span></a>
+<a class="sourceLine" id="cb11-14" data-line-number="14"><span class="co">#&gt; R1  0 -1 -1 -1  0</span></a>
+<a class="sourceLine" id="cb11-15" data-line-number="15"><span class="co">#&gt; R2 -1 -1  0 -1  0</span></a>
+<a class="sourceLine" id="cb11-16" data-line-number="16"><span class="co">#&gt; R3 -1  1 -1 -1 -1</span></a>
+<a class="sourceLine" id="cb11-17" data-line-number="17"><span class="co">#&gt; R4 -1  0  0  0 -1</span></a>
+<a class="sourceLine" id="cb11-18" data-line-number="18"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb11-19" data-line-number="19"><span class="co">#&gt; The considered rule is 2.</span></a></code></pre></div>
+<p>The rule with an obligatory action is the row with only -1 and 1 in the matrix above.</p>
+</div>
+<div id="min-max" class="section level2">
+<h2>Minimum and maximum number of available actions for the considered rule</h2>
+<p>As the size of our designs become larger, in order to keep the complexity of the choice at a reasonable level, we might want to specify a minimum and maximum number of allowed actions under the considered rule. We can easily do this through the options <code>min</code> and <code>max</code>.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" data-line-number="1">design_opt_input &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">rules =</span> <span class="dv">4</span>,</a>
+<a class="sourceLine" id="cb12-2" data-line-number="2">                         <span class="dt">actions =</span> <span class="dv">5</span>,</a>
+<a class="sourceLine" id="cb12-3" data-line-number="3">                         <span class="dt">min =</span> <span class="dv">2</span>, </a>
+<a class="sourceLine" id="cb12-4" data-line-number="4">                         <span class="dt">max =</span> <span class="dv">3</span>,</a>
+<a class="sourceLine" id="cb12-5" data-line-number="5">                         <span class="dt">obligatory =</span> <span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb12-6" data-line-number="6"></a>
+<a class="sourceLine" id="cb12-7" data-line-number="7">design &lt;-<span class="st"> </span><span class="kw">generate_designs</span>(design_opt_input)</a>
+<a class="sourceLine" id="cb12-8" data-line-number="8"></a>
+<a class="sourceLine" id="cb12-9" data-line-number="9"><span class="kw">print_design</span>(design, <span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb12-10" data-line-number="10"><span class="co">#&gt; The rules-action matrix </span></a>
+<a class="sourceLine" id="cb12-11" data-line-number="11"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb12-12" data-line-number="12"><span class="co">#&gt; Rows: Rules </span></a>
+<a class="sourceLine" id="cb12-13" data-line-number="13"><span class="co">#&gt; Columns: Actions </span></a>
+<a class="sourceLine" id="cb12-14" data-line-number="14"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb12-15" data-line-number="15"><span class="co">#&gt;    A1 A2 A3 A4 A5</span></a>
+<a class="sourceLine" id="cb12-16" data-line-number="16"><span class="co">#&gt; R1  1 -1 -1 -1 -1</span></a>
+<a class="sourceLine" id="cb12-17" data-line-number="17"><span class="co">#&gt; R2  0 -1 -1  0 -1</span></a>
+<a class="sourceLine" id="cb12-18" data-line-number="18"><span class="co">#&gt; R3 -1  0  0 -1 -1</span></a>
+<a class="sourceLine" id="cb12-19" data-line-number="19"><span class="co">#&gt; R4  0  0 -1 -1  0</span></a>
+<a class="sourceLine" id="cb12-20" data-line-number="20"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb12-21" data-line-number="21"><span class="co">#&gt; The considered rule is 4.</span></a></code></pre></div>
+</div>
+<div id="min-fit" class="section level2">
+<h2>Minimum number of rules fitting each permitted action conditional on the rule</h2>
+<p>To vary the difficulty of the game for the observer we can specify the minimum number of rules that each permitted action fits conditional on the observed rule. We specify the minimum number of rules using the <code>min_fit</code> option. For example, if we are considering a game with 4 rules and 5 actions and the considered rule permits the decision maker to choose one of two actions, then setting <code>min_fit = 2</code> means that each of the two actions fit at least two rules including the considered rule.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" data-line-number="1">design_opt_input &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">rules =</span> <span class="dv">4</span>,</a>
+<a class="sourceLine" id="cb13-2" data-line-number="2">                         <span class="dt">actions =</span> <span class="dv">5</span>,</a>
+<a class="sourceLine" id="cb13-3" data-line-number="3">                         <span class="dt">min_fit =</span> <span class="dv">2</span>,</a>
+<a class="sourceLine" id="cb13-4" data-line-number="4">                         <span class="dt">obligatory =</span> <span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb13-5" data-line-number="5"></a>
+<a class="sourceLine" id="cb13-6" data-line-number="6">design &lt;-<span class="st"> </span><span class="kw">generate_designs</span>(design_opt_input)</a>
+<a class="sourceLine" id="cb13-7" data-line-number="7"></a>
+<a class="sourceLine" id="cb13-8" data-line-number="8"><span class="kw">print_design</span>(design, <span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb13-9" data-line-number="9"><span class="co">#&gt; The rules-action matrix </span></a>
+<a class="sourceLine" id="cb13-10" data-line-number="10"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb13-11" data-line-number="11"><span class="co">#&gt; Rows: Rules </span></a>
+<a class="sourceLine" id="cb13-12" data-line-number="12"><span class="co">#&gt; Columns: Actions </span></a>
+<a class="sourceLine" id="cb13-13" data-line-number="13"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb13-14" data-line-number="14"><span class="co">#&gt;    A1 A2 A3 A4 A5</span></a>
+<a class="sourceLine" id="cb13-15" data-line-number="15"><span class="co">#&gt; R1  0  0 -1 -1  0</span></a>
+<a class="sourceLine" id="cb13-16" data-line-number="16"><span class="co">#&gt; R2  0 -1  0  0  0</span></a>
+<a class="sourceLine" id="cb13-17" data-line-number="17"><span class="co">#&gt; R3 -1 -1  1 -1 -1</span></a>
+<a class="sourceLine" id="cb13-18" data-line-number="18"><span class="co">#&gt; R4 -1 -1 -1  0  0</span></a>
+<a class="sourceLine" id="cb13-19" data-line-number="19"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb13-20" data-line-number="20"><span class="co">#&gt; The considered rule is 2.</span></a></code></pre></div>
+</div>
+<div id="spread-entropy" class="section level2">
+<h2>Spread of entropy</h2>
+<p>Given the trial and error nature of searching for obfuscation designs, by chance, we may end up in a situation where the difference between the entropy maximizing action and the second best is very small. This will make it very difficult for both decision makers and observers to identify the entropy maximizing action. The <code>generate_designs()</code> function includes an option that allow us to specify the “spread” of entropy.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1">design_opt_input &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">rules =</span> <span class="dv">4</span>,</a>
+<a class="sourceLine" id="cb14-2" data-line-number="2">                         <span class="dt">actions =</span> <span class="dv">5</span>,</a>
+<a class="sourceLine" id="cb14-3" data-line-number="3">                         <span class="dt">considered_rule =</span> <span class="dv">3</span>,</a>
+<a class="sourceLine" id="cb14-4" data-line-number="4">                         <span class="dt">sd_entropy =</span> <span class="fl">0.15</span>)</a>
+<a class="sourceLine" id="cb14-5" data-line-number="5"></a>
+<a class="sourceLine" id="cb14-6" data-line-number="6">design &lt;-<span class="st"> </span><span class="kw">generate_designs</span>(design_opt_input)</a>
+<a class="sourceLine" id="cb14-7" data-line-number="7"></a>
+<a class="sourceLine" id="cb14-8" data-line-number="8"><span class="kw">print_design</span>(design, <span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb14-9" data-line-number="9"><span class="co">#&gt; The rules-action matrix </span></a>
+<a class="sourceLine" id="cb14-10" data-line-number="10"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb14-11" data-line-number="11"><span class="co">#&gt; Rows: Rules </span></a>
+<a class="sourceLine" id="cb14-12" data-line-number="12"><span class="co">#&gt; Columns: Actions </span></a>
+<a class="sourceLine" id="cb14-13" data-line-number="13"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb14-14" data-line-number="14"><span class="co">#&gt;    A1 A2 A3 A4 A5</span></a>
+<a class="sourceLine" id="cb14-15" data-line-number="15"><span class="co">#&gt; R1 -1  0  0  0  0</span></a>
+<a class="sourceLine" id="cb14-16" data-line-number="16"><span class="co">#&gt; R2  0 -1 -1 -1  0</span></a>
+<a class="sourceLine" id="cb14-17" data-line-number="17"><span class="co">#&gt; R3  0  0 -1 -1 -1</span></a>
+<a class="sourceLine" id="cb14-18" data-line-number="18"><span class="co">#&gt; R4 -1 -1 -1  0  0</span></a>
+<a class="sourceLine" id="cb14-19" data-line-number="19"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb14-20" data-line-number="20"><span class="co">#&gt; The considered rule is 1.</span></a></code></pre></div>
+<p>Compared to the designs above, we see that we have a much larger spread of entropy for each action.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" data-line-number="1">entropy &lt;-<span class="st"> </span><span class="kw">calculate_entropy</span>(design)</a>
+<a class="sourceLine" id="cb15-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb15-3" data-line-number="3"><span class="kw">print_entropy</span>(entropy)</a>
+<a class="sourceLine" id="cb15-4" data-line-number="4"><span class="co">#&gt; Shannon's entropy -- Design  1 </span></a>
+<a class="sourceLine" id="cb15-5" data-line-number="5"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb15-6" data-line-number="6"><span class="co">#&gt;    A1    A2    A3    A4    A5 </span></a>
+<a class="sourceLine" id="cb15-7" data-line-number="7"><span class="co">#&gt; 0.301 0.276 0.000 0.276 0.458</span></a></code></pre></div>
+</div>
+<div id="multiple-designs" class="section level2">
+<h2>Multiple designs</h2>
+<p>Above, we have focused on one shot games, i.e. we have generated a single design. Often, researchers may want to play repeated games. The obfuscatoR package makes it easy to create multiple designs. Let us create a series of 2 designs by setting <code>designs = 2</code>. We are only using 2 designs here to save space when printing the output.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" data-line-number="1">design_opt_input &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">rules =</span> <span class="dv">4</span>,</a>
+<a class="sourceLine" id="cb16-2" data-line-number="2">                         <span class="dt">actions =</span> <span class="dv">5</span>,</a>
+<a class="sourceLine" id="cb16-3" data-line-number="3">                         <span class="dt">considered_rule =</span> <span class="dv">3</span>,</a>
+<a class="sourceLine" id="cb16-4" data-line-number="4">                         <span class="dt">designs =</span> <span class="dv">2</span>)</a>
+<a class="sourceLine" id="cb16-5" data-line-number="5"></a>
+<a class="sourceLine" id="cb16-6" data-line-number="6">design &lt;-<span class="st"> </span><span class="kw">generate_designs</span>(design_opt_input)</a>
+<a class="sourceLine" id="cb16-7" data-line-number="7"></a>
+<a class="sourceLine" id="cb16-8" data-line-number="8"><span class="kw">print_design</span>(design, <span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb16-9" data-line-number="9"><span class="co">#&gt; The rules-action matrix </span></a>
+<a class="sourceLine" id="cb16-10" data-line-number="10"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb16-11" data-line-number="11"><span class="co">#&gt; Rows: Rules </span></a>
+<a class="sourceLine" id="cb16-12" data-line-number="12"><span class="co">#&gt; Columns: Actions </span></a>
+<a class="sourceLine" id="cb16-13" data-line-number="13"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb16-14" data-line-number="14"><span class="co">#&gt;    A1 A2 A3 A4 A5</span></a>
+<a class="sourceLine" id="cb16-15" data-line-number="15"><span class="co">#&gt; R1  0 -1  0  0 -1</span></a>
+<a class="sourceLine" id="cb16-16" data-line-number="16"><span class="co">#&gt; R2  0  0 -1 -1  0</span></a>
+<a class="sourceLine" id="cb16-17" data-line-number="17"><span class="co">#&gt; R3  0  0  0 -1  0</span></a>
+<a class="sourceLine" id="cb16-18" data-line-number="18"><span class="co">#&gt; R4 -1 -1 -1 -1  0</span></a>
+<a class="sourceLine" id="cb16-19" data-line-number="19"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb16-20" data-line-number="20"><span class="co">#&gt; The considered rule is 3.</span></a>
+<a class="sourceLine" id="cb16-21" data-line-number="21"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb16-22" data-line-number="22"><span class="co">#&gt; The design was found in 10 iterations. </span></a>
+<a class="sourceLine" id="cb16-23" data-line-number="23"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb16-24" data-line-number="24"><span class="co">#&gt; All the design conditions were met: TRUE</span></a>
+<a class="sourceLine" id="cb16-25" data-line-number="25"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb16-26" data-line-number="26"><span class="co">#&gt;    A1 A2 A3 A4 A5</span></a>
+<a class="sourceLine" id="cb16-27" data-line-number="27"><span class="co">#&gt; R1  0  0 -1 -1 -1</span></a>
+<a class="sourceLine" id="cb16-28" data-line-number="28"><span class="co">#&gt; R2  0 -1  0 -1 -1</span></a>
+<a class="sourceLine" id="cb16-29" data-line-number="29"><span class="co">#&gt; R3 -1  0 -1  0 -1</span></a>
+<a class="sourceLine" id="cb16-30" data-line-number="30"><span class="co">#&gt; R4  0  0 -1  0  0</span></a>
+<a class="sourceLine" id="cb16-31" data-line-number="31"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb16-32" data-line-number="32"><span class="co">#&gt; The considered rule is 2.</span></a>
+<a class="sourceLine" id="cb16-33" data-line-number="33"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb16-34" data-line-number="34"><span class="co">#&gt; The design was found in 3 iterations. </span></a>
+<a class="sourceLine" id="cb16-35" data-line-number="35"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb16-36" data-line-number="36"><span class="co">#&gt; All the design conditions were met: TRUE</span></a></code></pre></div>
+<p>To calculate the entropy associated with each action in the designs, we can run the calculate entropy function, but this time we supply a list of designs.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" data-line-number="1">entropy &lt;-<span class="st"> </span><span class="kw">calculate_entropy</span>(design)</a>
+<a class="sourceLine" id="cb17-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb17-3" data-line-number="3"><span class="kw">print_entropy</span>(entropy)</a>
+<a class="sourceLine" id="cb17-4" data-line-number="4"><span class="co">#&gt; Shannon's entropy -- Design  1 </span></a>
+<a class="sourceLine" id="cb17-5" data-line-number="5"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb17-6" data-line-number="6"><span class="co">#&gt;    A1    A2    A3    A4    A5 </span></a>
+<a class="sourceLine" id="cb17-7" data-line-number="7"><span class="co">#&gt; 0.473 0.297 0.297 0.000 0.395 </span></a>
+<a class="sourceLine" id="cb17-8" data-line-number="8"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb17-9" data-line-number="9"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb17-10" data-line-number="10"><span class="co">#&gt; Shannon's entropy -- Design  2 </span></a>
+<a class="sourceLine" id="cb17-11" data-line-number="11"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb17-12" data-line-number="12"><span class="co">#&gt;    A1    A2    A3    A4    A5 </span></a>
+<a class="sourceLine" id="cb17-13" data-line-number="13"><span class="co">#&gt; 0.458 0.458 0.000 0.276 0.000</span></a></code></pre></div>
+<p>If you wish to print all the information about all designs, as above, you can set <code>print_all = TRUE</code> as shown below. We leave the user to run that code on their own machine given the rather large output.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" data-line-number="1"><span class="kw">print_entropy</span>(entropy, <span class="dt">print_all =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
+</div>
+<div id="design-options" class="section level2">
+<h2>List of design options</h2>
+<p>We provide the full list of design options and defaults in the table below.</p>
+<table>
+<colgroup>
+<col width="16%"></col>
+<col width="27%"></col>
+<col width="18%"></col>
+<col width="37%"></col>
+</colgroup>
+<thead>
+<tr class="header">
+<th>Option</th>
+<th>Description</th>
+<th>Default</th>
+<th>Must be specified</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="#simple-design">rules</a></td>
+<td>The number of rules</td>
+<td>NULL</td>
+<td>Yes</td>
+</tr>
+<tr class="even">
+<td><a href="#simple-design">actions</a></td>
+<td>The number of actions</td>
+<td>NULL</td>
+<td>Yes</td>
+</tr>
+<tr class="odd">
+<td><a href="#min-max">min</a></td>
+<td>Minimum number of actions available for the considered rule</td>
+<td>NA</td>
+<td>No</td>
+</tr>
+<tr class="even">
+<td><a href="#min-max">max</a></td>
+<td>Maximum number of actions available for the considered rule</td>
+<td>NA</td>
+<td>No</td>
+</tr>
+<tr class="odd">
+<td><a href="#min-fit">min_fit</a></td>
+<td>Minimum number of rules fitting each permitted action conditional on the rule</td>
+<td>0</td>
+<td>No</td>
+</tr>
+<tr class="even">
+<td><a href="#obligatory-actions">obligatory</a></td>
+<td>Number of rules with obligatory actions</td>
+<td>0</td>
+<td>No</td>
+</tr>
+<tr class="odd">
+<td><a href="#spread-entropy">sd_entropy</a></td>
+<td>Specifies the standard deviation of the entropy values</td>
+<td>NA</td>
+<td>No</td>
+</tr>
+<tr class="even">
+<td><a href="#multiple-designs">designs</a></td>
+<td>Number of designs to generate</td>
+<td>1</td>
+<td>No</td>
+</tr>
+<tr class="odd">
+<td>max_iter</td>
+<td>Maximum number of iterations before stopping the search for designs</td>
+<td>1e5</td>
+<td>No</td>
+</tr>
+<tr class="even">
+<td><a href="#set-seed">seed</a></td>
+<td>A seed for the random number generator</td>
+<td>NA</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="a-cautionary-note" class="section level2">
+<h2>A cautionary note</h2>
+<p>The search for new designs is one of trial and error. If you set too many or too tight restrictions on your designs, you may not be able to find valid designs in a reasonable time and the search algorithm will continue until it is stopped.</p>
+<p>It is good practice to manually inspect all designs prior to use to ensure that they are indeed of the form you want.</p>
+</div>
+</div>
+<div id="saving" class="section level1">
+<h1>Saving the designs</h1>
+<p>Once you have created your designs, you might want to save them. We can do this using the <code>save_design()</code> function. The function stores the designs in a .csv file or multiple .csv files if you have generated multiple designs. The function will automatically generate a name of the form “FILE-NAME-rule-X-design-I.csv”, where <strong>X</strong> is the considered rule used to generate the design, and <strong>I</strong> is the design number.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" data-line-number="1"><span class="kw">save_design</span>(design, <span class="st">&quot;my_designs&quot;</span>)</a></code></pre></div>
+</div>
+<div id="payout" class="section level1">
+<h1>Calculating the payouts</h1>
+<p>The obfuscatoR package also contains a set of functions that can aid the analyst in determining the expected payout to observers and decision makers from any given design. The participants are incentivized such that it is always in the best interest of the decision maker to choose the entropy maximizing action, and if succeeding in doing so, the observer should avoid guessing the rule.</p>
+<div id="payout-to-the-observer" class="section level2">
+<h2>Payout to the observer</h2>
+<p>The expected payout to the observer consists of two parts: i) The expected payout from guessing, and ii) the expected payout from not guessing. The first expectation depends on the posterior probabilities calculated in , and is calculated using :</p>
+<p><span class="math display">\[\begin{equation}\label{eqn-payout-obs}
+  \mathrm{E}\left[P\right] = \mathrm{argmax}\left\{\Pr(r_k|a_j)\right\}\pi
+\end{equation}\]</span></p>
+<p>where <span class="math inline">\(\mathrm{argmax}\left\{\Pr(r_k|a_j)\right\}\)</span> is the maximum posterior probability that a specific rule underlies a decision maker’s action, and <span class="math inline">\(\pi^\mathrm{G}\)</span> is the payout from guessing correctly. If the observer guesses incorrectly, she receives nothing. If the observer refrains from guessing, she will receive <span class="math inline">\(\pi^\mathrm{NG}\)</span> with certainty.</p>
+</div>
+<div id="payout-to-the-decision-maker" class="section level2">
+<h2>Payout to the decision maker</h2>
+<p>The expected payout to the decision maker depends on whether or not the observer chooses to guess. If the decision maker is successful in keeping the observer as clueless as possible as to which rule governs his actions, i.e. the observer refrains from guessing, then the decision maker receives <span class="math inline">\(\phi\)</span>. If the observer decides to guess, the decision maker receives nothing.</p>
+<p>The probability that an observer tries to guess is a function of the difference between the expected payout from guessing, i.e. , and the payout if she refrains from guessing as in .</p>
+<p><span class="math display">\[\begin{equation}\label{eqn-probabilistic}
+  \Pr(\mathrm{G}) = \frac{1}{1 + \exp(-(\mathrm{E}\left[P\right] - \pi^\mathrm{NG}))}
+\end{equation}\]</span></p>
+<p>Alternatively, we can treat the decision to guess as deterministic and use an indicator function:</p>
+<p><span class="math display">\[\begin{equation}\label{eqn-deterministic}
+  \Pr(\mathrm{G}) = \left\{\begin{array}{cl}
+  1 &amp; \mathrm{if } \mathrm{E}\left[P\right] &gt; \pi^\mathrm{NG} \\
+  0 &amp; \mathrm{if } \mathrm{E}\left[P\right] \leq \pi^\mathrm{NG}\\
+  \end{array}
+  \right.
+\end{equation}\]</span></p>
+<p>Using either  or , we can calculate the expected payout to the decision maker using :</p>
+<p><span class="math display">\[\begin{equation}\label{eqn-payout-dm}
+  \mathrm{E}\left[P\right] = (1 - \Pr(\mathrm{G})) * \phi
+\end{equation}\]</span></p>
+</div>
+<div id="an-example" class="section level2">
+<h2>An example</h2>
+<p>Let us create a simple design with 4 rules and 5 possible actions, and calculate the entropy of each action. Now, we can use the <code>calculate_payouts</code> function to calculate the expected payout to both the observer and decision maker. Please note that the only consequential payouts to the decision maker are for those actions permitted by the considered rule. Below, we have set the option <code>deterministic = FALSE</code>, this means that the probabilities of the observer guessing are calculated using . If <code>deterministic = TRUE</code>, then the probabilities are calculated using .</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" data-line-number="1">design_opt_input &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">rules =</span> <span class="dv">4</span>,</a>
+<a class="sourceLine" id="cb20-2" data-line-number="2">                         <span class="dt">actions =</span> <span class="dv">5</span>)</a>
+<a class="sourceLine" id="cb20-3" data-line-number="3"></a>
+<a class="sourceLine" id="cb20-4" data-line-number="4">design &lt;-<span class="st"> </span><span class="kw">generate_designs</span>(design_opt_input)</a>
+<a class="sourceLine" id="cb20-5" data-line-number="5">entropy &lt;-<span class="st"> </span><span class="kw">calculate_entropy</span>(design)</a>
+<a class="sourceLine" id="cb20-6" data-line-number="6"></a>
+<a class="sourceLine" id="cb20-7" data-line-number="7">payout &lt;-<span class="st"> </span><span class="kw">calculate_payouts</span>(entropy,</a>
+<a class="sourceLine" id="cb20-8" data-line-number="8">                            <span class="dt">pay_obs =</span> <span class="dv">10</span>,</a>
+<a class="sourceLine" id="cb20-9" data-line-number="9">                            <span class="dt">pay_no_guess =</span> <span class="dv">5</span>,</a>
+<a class="sourceLine" id="cb20-10" data-line-number="10">                            <span class="dt">pay_dm =</span> <span class="dv">5</span>,</a>
+<a class="sourceLine" id="cb20-11" data-line-number="11">                            <span class="dt">deterministic =</span> <span class="ot">FALSE</span>)</a></code></pre></div>
+<p>The expected payout to the observer from guessing is calculated for every action based on the highest conditional probability for that action, i.e. what is the expected payout from guessing if she observes any given action. For the decision maker it is the expected payout from choosing any given action. Notice that the expected payout from choosing an action that is prohibited by the considered rule is zero. We can print the calculated probabilities of guessing by setting <code>print_all = TRUE</code>.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" data-line-number="1"><span class="kw">print_payout</span>(payout, <span class="dt">print_all =</span> <span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb21-2" data-line-number="2"><span class="co">#&gt; Payout to the observer -- Design  1 </span></a>
+<a class="sourceLine" id="cb21-3" data-line-number="3"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb21-4" data-line-number="4"><span class="co">#&gt; E[Pay|1] E[Pay|2] E[Pay|3] E[Pay|4] E[Pay|5] </span></a>
+<a class="sourceLine" id="cb21-5" data-line-number="5"><span class="co">#&gt;     4.62     5.00     5.71     5.00     4.00 </span></a>
+<a class="sourceLine" id="cb21-6" data-line-number="6"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb21-7" data-line-number="7"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb21-8" data-line-number="8"><span class="co">#&gt; Payout to the decision maker -- Design  1 </span></a>
+<a class="sourceLine" id="cb21-9" data-line-number="9"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb21-10" data-line-number="10"><span class="co">#&gt; E[Pay|1] E[Pay|2] E[Pay|3] E[Pay|4] E[Pay|5] </span></a>
+<a class="sourceLine" id="cb21-11" data-line-number="11"><span class="co">#&gt;     0.00     2.50     1.64     2.50     3.66 </span></a>
+<a class="sourceLine" id="cb21-12" data-line-number="12"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb21-13" data-line-number="13"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb21-14" data-line-number="14"><span class="co">#&gt; Probabilities of guessing -- Design  1 </span></a>
+<a class="sourceLine" id="cb21-15" data-line-number="15"><span class="co">#&gt; </span></a>
+<a class="sourceLine" id="cb21-16" data-line-number="16"><span class="co">#&gt; Pr[G|1] Pr[G|2] Pr[G|3] Pr[G|4] Pr[G|5] </span></a>
+<a class="sourceLine" id="cb21-17" data-line-number="17"><span class="co">#&gt;   0.405   0.500   0.671   0.500   0.269</span></a></code></pre></div>
+</div>
+</div>
+<div id="acknowledgments" class="section level1">
+<h1>Acknowledgments</h1>
+<p>This research has received funding from the European Research Council by means of ERC-Consolidator grant 724431-BEHAVE. Erlend Dancke Sandorf acknowledges funding from the European Union’s Horizon 2020 research and innovation program under the Marie Sklodowska-Curie grant agreement 793163-INSPiRE. We are grateful to Teodora Szep for testing and commenting on earlier versions of the package. Any remaining errors are the sole responsibility of the authors.</p>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
+<div id="refs" class="references">
+<div id="ref-Chorus2019">
+<p>Chorus, Caspar, Sander van Cranenburgh, Erlend Dancke Sandorf, Anae Sobhani, and Teodora Szep. 2019. “Obfuscation Maximization for Discrete Choice Analysis: Theory, Methodology and First Empirical Evidence.”</p>
+</div>
+<div id="ref-Shannon1948">
+<p>Shannon, C E. 1948. “A Mathematial Theory of Communication.” <em>Bell System Technical Journal</em> 16 (2): 158–74.</p>
+</div>
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>University of Stirling, Stirling Management School, Economics Division, <a href="mailto:e.d.sandorf@stir.ac.uk" class="email">e.d.sandorf@stir.ac.uk</a><a href="#fnref1" class="footnote-back">↩</a></p></li>
+<li id="fn2"><p>Delft University of Technology, Department of Engineering Systems and Services<a href="#fnref2" class="footnote-back">↩</a></p></li>
+<li id="fn3"><p>Delft University of Technology, Department of Engineering Systems and Services<a href="#fnref3" class="footnote-back">↩</a></p></li>
+<li id="fn4"><p>As in <span class="citation">Chorus et al. (<a href="#ref-Chorus2019">2019</a>)</span>, we refer to the decision maker as he and the observer/onlooker as she.<a href="#fnref4" class="footnote-back">↩</a></p></li>
+<li id="fn5"><p>Note, that when we discuss the game, we refer to these motivations and preferences as rules.<a href="#fnref5" class="footnote-back">↩</a></p></li>
+</ol>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
